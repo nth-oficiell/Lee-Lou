@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pour toi, mon amour ❤️</title>
+    <style>
+        :root {
+            --rose: #ff4d6d;
+            --rose-light: #ff99ac;
+            --gold: #ffd700;
+            --dark-bg: #0a0a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--dark-bg);
+            cursor: default;
+            user-select: none;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Fond étoilé */
+        canvas#bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Conteneur principal */
+        .main-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Enveloppe stylisée */
+        .envelope-wrapper {
+            position: relative;
+            width: 380px;
+            height: 260px;
+            pointer-events: all;
+            cursor: pointer;
+            transition: transform 0.5s ease;
+            filter: drop-shadow(0 20px 30px rgba(255, 77, 109, 0.7));
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.08);
+        }
+
+        .envelope {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Corps de l'enveloppe */
+        .envelope-body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 85%;
+            background: linear-gradient(135deg, #f8e3e8 0%, #f2c9d5 30%, #f8b4c8 70%, #f0a0b8 100%);
+            border-radius: 18px 18px 30px 30px;
+            box-shadow: inset 0 -8px 15px rgba(0, 0, 0, 0.15), 0 15px 35px rgba(0, 0, 0, 0.4);
+            z-index: 2;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Ligne décorative */
+        .envelope-body::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Rabat supérieur (triangle) */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            clip-path: polygon(0% 0%, 50% 65%, 100% 0%);
+            background: linear-gradient(135deg, #fce4e8 0%, #f6c2d0 40%, #f49cb6 100%);
+            z-index: 4;
+            border-radius: 18px 18px 0 0;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3), inset 0 -5px 10px rgba(0,0,0,0.1);
+            transform-origin: top center;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-bottom: none;
+        }
+
+        .envelope-wrapper.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 0;
+            box-shadow: 0 -15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Sceau / Cachet coeur */
+        .seal {
+            position: absolute;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 65px;
+            height: 65px;
+            background: radial-gradient(circle at 30% 30%, #ff5e7e, #c71e3a);
+            border-radius: 50%;
+            z-index: 5;
+            box-shadow: 0 8px 20px rgba(255, 0, 50, 0.7), 0 0 0 4px rgba(255, 215, 0, 0.8), 0 0 0 8px rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            transition: transform 0.4s ease, opacity 0.4s;
+            animation: pulseSeal 2s infinite;
+        }
+
+        @keyframes pulseSeal {
+            0% { box-shadow: 0 8px 20px rgba(255, 0, 50, 0.7), 0 0 0 4px rgba(255, 215, 0, 0.8), 0 0 0 8px rgba(255, 255, 255, 0.7); }
+            50% { box-shadow: 0 8px 30px rgba(255, 0, 50, 1), 0 0 0 6px rgba(255, 215, 0, 1), 0 0 0 12px rgba(255, 255, 255, 0.9); }
+            100% { box-shadow: 0 8px 20px rgba(255, 0, 50, 0.7), 0 0 0 4px rgba(255, 215, 0, 0.8), 0 0 0 8px rgba(255, 255, 255, 0.7); }
+        }
+
+        .envelope-wrapper.open .seal {
+            transform: translate(-50%, -50%) scale(0.3);
+            opacity: 0;
+        }
+
+        /* Zone centrale pour le message et les coeurs */
+        .center-stage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 60vh;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        /* Message principal */
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.2);
+            font-size: clamp(40px, 8vw, 85px);
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            opacity: 0;
+            letter-spacing: 6px;
+            z-index: 20;
+            pointer-events: none;
+            text-shadow:
+                0 0 15px #ff4d6d,
+                0 0 35px #ff4d6d,
+                0 0 70px #ff99ac,
+                0 0 100px #ff1a4f,
+                0 0 150px #ffd700;
+            transition: all 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-family: 'Brush Script MT', 'Great Vibes', 'Georgia', cursive;
+            white-space: nowrap;
+        }
+
+        #message.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.15);
+        }
+
+        /* Cœurs flottants - CENTRÉS */
+        .heart {
+            position: absolute;
+            color: #ff4d6d;
+            pointer-events: none;
+            z-index: 15;
+            animation: floatUpCenter 5.5s ease-out forwards;
+            filter: drop-shadow(0 0 10px rgba(255, 77, 109, 0.9));
+            font-size: 24px;
+            left: 50%;
+            top: 90%;
+            transform: translateX(-50%);
+        }
+
+        @keyframes floatUpCenter {
+            0% {
+                transform: translate(-50%, 0) translateX(calc(var(--drift) * 1px)) rotate(0deg) scale(0.4);
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+                transform: translate(-50%, -50px) translateX(calc(var(--drift) * 2px)) rotate(10deg) scale(1.2);
+            }
+            40% {
+                opacity: 0.9;
+                transform: translate(-50%, -180px) translateX(calc(var(--drift) * 3px)) rotate(-5deg) scale(1);
+            }
+            70% {
+                opacity: 0.5;
+                transform: translate(-50%, -350px) translateX(calc(var(--drift) * 4px)) rotate(15deg) scale(0.7);
+            }
+            100% {
+                transform: translate(-50%, -600px) translateX(calc(var(--drift) * 6px)) rotate(25deg) scale(0.1);
+                opacity: 0;
+            }
+        }
+
+        /* Petite animation scintillante autour du centre */
+        .sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: gold;
+            border-radius: 50%;
+            z-index: 12;
+            pointer-events: none;
+            animation: sparkleCenter 1.8s ease-out forwards;
+            box-shadow: 0 0 15px 2px #ffd700;
+            left: 50%;
+            top: 50%;
+        }
+
+        @keyframes sparkleCenter {
+            0% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1) translate(0, 0); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(3) translate(var(--sx), var(--sy)); 
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .envelope-wrapper {
+                width: 280px;
+                height: 200px;
+            }
+            .seal {
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+            }
+            .center-stage {
+                width: 95vw;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+
+    <div class="main-container">
+        <!-- Enveloppe cliquable -->
+        <div class="envelope-wrapper" id="envelopeWrapper" onclick="ouvrirEnveloppe()">
+            <div class="envelope">
+                <div class="envelope-body"></div>
+                <div class="envelope-flap"></div>
+                <div class="seal">❤️</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zone centrale pour les coeurs -->
+    <div class="center-stage" id="centerStage"></div>
+    
+    <div id="message">JE T'AIME ❤️</div>
+
+    <script>
+        (function() {
+            // 🌌 CANVAS ÉTOILÉ AMÉLIORÉ
+            const canvas = document.getElementById('bg');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let stars = [];
+            const STAR_COUNT = 280;
+
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2.2 + 0.5,
+                    speed: Math.random() * 0.7 + 0.1,
+                    opacity: Math.random(),
+                    twinkleSpeed: Math.random() * 0.02 + 0.005
+                });
+            }
+
+            function animateStars() {
+                ctx.fillStyle = 'rgba(10, 10, 26, 0.35)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                stars.forEach(star => {
+                    star.y += star.speed;
+                    if (star.y > canvas.height) {
+                        star.y = 0;
+                        star.x = Math.random() * canvas.width;
+                    }
+
+                    star.opacity += star.twinkleSpeed;
+                    if (star.opacity > 1 || star.opacity < 0.3) {
+                        star.twinkleSpeed = -star.twinkleSpeed;
+                    }
+
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (star.radius > 1.5 && star.opacity > 0.7) {
+                        ctx.fillStyle = `rgba(255, 220, 240, 0.15)`;
+                        ctx.beginPath();
+                        ctx.arc(star.x, star.y, star.radius * 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+
+                requestAnimationFrame(animateStars);
+            }
+
+            animateStars();
+
+            // 💌 OUVERTURE DE L'ENVELOPPE
+            window.ouvrirEnveloppe = function() {
+                const wrapper = document.getElementById('envelopeWrapper');
+                if (wrapper.classList.contains('open')) return;
+
+                wrapper.classList.add('open');
+
+                setTimeout(() => {
+                    document.getElementById('message').classList.add('show');
+                    lancerPluieDeCoeursCentre();
+                    lancerEtincellesCentre();
+                }, 600);
+            }
+
+            function lancerPluieDeCoeursCentre() {
+                const centerStage = document.getElementById('centerStage');
+                const coeurs = ['❤️', '💕', '💖', '💘', '💝', '💗', '💓', '💞', '✨', '💌', '🌹', '💐'];
+                let compteur = 0;
+                
+                const interval = setInterval(() => {
+                    if (compteur > 80) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    
+                    // Créer 2-4 coeurs à chaque intervalle
+                    const nombreCoeurs = Math.floor(Math.random() * 3) + 2;
+                    for (let i = 0; i < nombreCoeurs; i++) {
+                        const heart = document.createElement('div');
+                        heart.className = 'heart';
+                        heart.innerHTML = coeurs[Math.floor(Math.random() * coeurs.length)];
+                        
+                        // Variation de dérive horizontale (drift) pour effet naturel
+                        const drift = (Math.random() - 0.5) * 180;
+                        heart.style.setProperty('--drift', drift);
+                        
+                        // Variation de taille
+                        heart.style.fontSize = (Math.random() * 25 + 18) + 'px';
+                        
+                        // Variation de durée d'animation
+                        heart.style.animationDuration = (Math.random() * 4 + 4.5) + 's';
+                        
+                        // Léger délai aléatoire
+                        heart.style.animationDelay = Math.random() * 0.5 + 's';
+                        
+                        // Position de départ légèrement variable
+                        heart.style.left = `calc(50% + ${(Math.random() - 0.5) * 60}px)`;
+                        heart.style.top = `${85 + Math.random() * 10}%`;
+                        
+                        centerStage.appendChild(heart);
+                        
+                        // Nettoyage
+                        setTimeout(() => {
+                            if (heart && heart.parentNode) heart.remove();
+                        }, 6000);
+                    }
+                    compteur++;
+                }, 200);
+            }
+
+            function lancerEtincellesCentre() {
+                const centerStage = document.getElementById('centerStage');
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const sparkle = document.createElement('div');
+                        sparkle.className = 'sparkle';
+                        
+                        // Position autour du centre
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = Math.random() * 140 + 50;
+                        const sx = Math.cos(angle) * distance + 'px';
+                        const sy = Math.sin(angle) * distance + 'px';
+                        
+                        sparkle.style.setProperty('--sx', sx);
+                        sparkle.style.setProperty('--sy', sy);
+                        sparkle.style.animationDuration = (Math.random() * 1.5 + 1.2) + 's';
+                        
+                        centerStage.appendChild(sparkle);
+                        setTimeout(() => sparkle.remove(), 2000);
+                    }, i * 30);
+                }
+            }
+
+            // Relancer les coeurs en cliquant sur le message
+            document.getElementById('message').addEventListener('click', (e) => {
+                e.stopPropagation();
+                lancerPluieDeCoeursCentre();
+                lancerEtincellesCentre();
+            });
+
+            // Redimensionnement
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                stars.forEach(star => {
+                    star.x = Math.random() * canvas.width;
+                    star.y = Math.random() * canvas.height;
+                });
+            });
+
+        })();
+    </script>
+</body>
+</html>
